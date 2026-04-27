@@ -74,7 +74,9 @@ jobs:
         run: go test -race ./...
 
       - name: Check GitHub Actions versions
-        run: go run ./cmd/action-version-check .github/workflows
+        run: |
+          go build -o "$GITHUB_WORKSPACE/bin/action-version-check" ./cmd/action-version-check
+          "$GITHUB_WORKSPACE/bin/action-version-check" "$GITHUB_WORKSPACE/.github/workflows"
 
   release-build:
     name: Release Build (${{ matrix.goos }}/${{ matrix.goarch }})
@@ -113,6 +115,7 @@ jobs:
           CGO_ENABLED: 0
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
+        working-directory: ${{ github.workspace }}
         run: |
           mkdir -p dist
           ext=""
