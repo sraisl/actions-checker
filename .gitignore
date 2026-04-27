@@ -1,5 +1,5 @@
 # Binaries
-action-version-check
+/action-version-check
 *.exe
 *.dll
 *.so

@@ -119,15 +119,6 @@ jobs:
         run: |
           echo "tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
 
-      - name: Cache release binaries
-        uses: actions/cache@v4.2.0
-        with:
-          path: |
-            dist
-          key: release-${{ matrix.goos }}-${{ matrix.goarch }}-${{ steps.get_tag.outputs.tag }}
-          restore-keys: |
-            release-${{ matrix.goos }}-${{ matrix.goarch }}-
-
       - name: Build release binary
         env:
           CGO_ENABLED: 0
@@ -137,11 +128,6 @@ jobs:
           ext=""
           if [ "$GOOS" = "windows" ]; then
             ext=".exe"
-          fi
-
-          if [ -f "dist/action-version-check-${GOOS}-${GOARCH}${ext}" ]; then
-            echo "Skipping build, using cached artifact"
-            exit 0
           fi
 
           mkdir -p dist
