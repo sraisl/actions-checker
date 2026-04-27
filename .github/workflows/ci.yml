@@ -83,6 +83,9 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     needs: build
+    concurrency:
+      group: release-build-${{ github.ref }}
+      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
@@ -109,6 +112,21 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+          cache-dependency-path: go.sum
+
+      - name: Get git tag
+        id: get_tag
+        run: |
+          echo "tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
+
+      - name: Cache release binaries
+        uses: actions/cache@v4.2.0
+        with:
+          path: |
+            dist
+          key: release-${{ matrix.goos }}-${{ matrix.goarch }}-${{ steps.get_tag.outputs.tag }}
+          restore-keys: |
+            release-${{ matrix.goos }}-${{ matrix.goarch }}-
 
       - name: Build release binary
         env:
@@ -116,11 +134,17 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
         run: |
-          mkdir -p dist
           ext=""
           if [ "$GOOS" = "windows" ]; then
             ext=".exe"
           fi
+
+          if [ -f "dist/action-version-check-${GOOS}-${GOARCH}${ext}" ]; then
+            echo "Skipping build, using cached artifact"
+            exit 0
+          fi
+
+          mkdir -p dist
 
           out="action-version-check-${GOOS}-${GOARCH}${ext}"
           go build \
