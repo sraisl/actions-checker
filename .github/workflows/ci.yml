@@ -115,7 +115,6 @@ jobs:
           CGO_ENABLED: 0
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-        working-directory: ${{ github.workspace }}
         run: |
           mkdir -p dist
           ext=""
