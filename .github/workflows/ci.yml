@@ -84,7 +84,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: build
     concurrency:
-      group: release-build-${{ github.ref }}
+      group: release-build-${{ github.ref }}-${{ matrix.goos }}-${{ matrix.goarch }}
       cancel-in-progress: true
     strategy:
       fail-fast: false
